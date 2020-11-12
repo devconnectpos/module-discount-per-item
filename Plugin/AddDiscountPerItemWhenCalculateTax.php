@@ -53,8 +53,25 @@ class AddDiscountPerItemWhenCalculateTax
         if ($item->getData('retail_discount_per_items_discount') && !$useBaseCurrency) {
             $item->setDiscountAmount($item->getDiscountAmount()
                                      + $item->getData('retail_discount_per_items_discount'));
+
+            // SCGPOS-169 - Add Discount Per Item To Manual Discount
+            $this->addManualDiscountData($item, $item->getData('retail_discount_per_items_discount'));
         }
 
         return $proceed($itemDataObjectFactory, $item, $priceIncludesTax, $useBaseCurrency, $parentCode);
+    }
+
+    /**
+     * @param AbstractItem $item
+     * @param float $discountAmount
+     */
+    public function addManualDiscountData($item, $discountAmount)
+    {
+        $discountData = $item->getData('cpos_manual_discount_data')
+            ? json_decode($item->getData('cpos_manual_discount_data'), true)
+            : [];
+
+        $discountData['discount_per_item'] = $discountAmount;
+        $item->setData('cpos_manual_discount_data', json_encode($discountData));
     }
 }
