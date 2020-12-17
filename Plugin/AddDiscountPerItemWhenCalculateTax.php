@@ -55,6 +55,10 @@ class AddDiscountPerItemWhenCalculateTax
                                      + $item->getData('retail_discount_per_items_discount'));
         }
 
+        if ($item->getBuyRequest()->getData('retail_discount_per_items_percent')) {
+            $item->setDiscountPercent($item->getBuyRequest()->getData('retail_discount_per_items_percent'));
+        }
+
         return $proceed($itemDataObjectFactory, $item, $priceIncludesTax, $useBaseCurrency, $parentCode);
     }
 }
