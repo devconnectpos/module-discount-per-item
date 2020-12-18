@@ -9,4 +9,9 @@
     <event name="sales_model_service_quote_submit_before">
         <observer name="discount_per_item_save_quote_and_order" instance="\SM\DiscountPerItem\Observer\SaveDiscountPerItemToOrderAndQuote"/>
     </event>
+
+    <event name="sales_order_item_save_before">
+        <observer name="connectpos_save_discount_per_item_to_order_item" instance="\SM\DiscountPerItem\Observer\SaveDiscountPerItemToOrderItem"/>
+    </event>
+
 </config>
