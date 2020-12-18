@@ -26,6 +26,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
         if (version_compare($context->getVersion(), '0.0.5', '<')) {
             $this->addDiscountPerItemColumn($setup);
         }
+
+        if (version_compare($context->getVersion(), '0.0.6', '<')) {
+            $this->addDiscountPerItemColumnToOrderItem($setup);
+        }
+
+        $setup->endSetup();
     }
 
     protected function addDiscountPerItemColumn(SchemaSetupInterface $setup)
@@ -101,7 +107,33 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'comment'  => 'Discount per item',
             ]
         );
+    }
 
-        $setup->endSetup();
+    public function addDiscountPerItemColumnToOrderItem(SchemaSetupInterface $setup)
+    {
+        $installer = $setup;
+        $tableName = $installer->getTable('sales_order_item');
+
+        $installer->getConnection()->addColumn(
+            $tableName,
+            'cpos_discount_per_item',
+            [
+                'type'     => Table::TYPE_DECIMAL,
+                'length'   => '12,4',
+                'nullable' => true,
+                'comment'  => 'Discount per item',
+            ]
+        );
+
+        $installer->getConnection()->addColumn(
+            $tableName,
+            'cpos_discount_per_item_percent',
+            [
+                'type'     => Table::TYPE_DECIMAL,
+                'length'   => '12,4',
+                'nullable' => true,
+                'comment'  => 'Discount per item percent',
+            ]
+        );
     }
 }
