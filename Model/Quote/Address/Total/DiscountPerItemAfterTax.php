@@ -224,7 +224,7 @@ class DiscountPerItemAfterTax extends CommonTaxCollector
         if ($price) {
             $rate = (string)$parentId;
             // initialize the delta to a small number to avoid non-deterministic behavior with rounding of 0.5
-            $delta = isset($this->roundingDeltas[$type][$rate]) ? $this->roundingDeltas[$type][$rate] : 0.000001;
+            $delta = $this->roundingDeltas[$type][$rate] ?? 0.000001;
             $price += $delta;
             $this->roundingDeltas[$type][$rate] = $price - $this->round($price);
             $price                               = $this->round($price);

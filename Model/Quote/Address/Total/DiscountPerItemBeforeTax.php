@@ -18,7 +18,7 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
 {
 
     public static $HIDDEN_TAX = [];
-    protected $code      = 'retail_discount_per_item';
+    protected $code = 'retail_discount_per_item';
     /**
      * @var \Magento\Tax\Model\Calculation
      */
@@ -64,8 +64,8 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
         \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency,
         \SM\DiscountPerItem\Helper\DiscountPerItemHelper $discountPerItemHelper
     ) {
-        $this->calculation           = $calculation;
-        $this->priceCurrency         = $priceCurrency;
+        $this->calculation = $calculation;
+        $this->priceCurrency = $priceCurrency;
         $this->discountPerItemHelper = $discountPerItemHelper;
         parent::__construct(
             $taxConfig,
@@ -88,7 +88,7 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
             return $this;
         }
 
-        $this->store          = $quote->getStore();
+        $this->store = $quote->getStore();
         $applyTaxAfterDiscount = $this->_config->applyTaxAfterDiscount($this->store->getStoreId());
         if (!$applyTaxAfterDiscount) {
             return $this;
@@ -96,14 +96,14 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
 
         parent::collect($quote, $shippingAssignment, $total);
         $customer = $quote->getCustomer();
-        $request  = $this->getCalculator()
-                         ->getRateRequest(
-                             $quote->getShippingAddress(),
-                             $quote->getBillingAddress(),
-                             $quote->getCustomerTaxClassId(),
-                             $this->store->getStoreId(),
-                             $customer->getId()
-                         );
+        $request = $this->getCalculator()
+            ->getRateRequest(
+                $quote->getShippingAddress(),
+                $quote->getBillingAddress(),
+                $quote->getCustomerTaxClassId(),
+                $this->store->getStoreId(),
+                $customer->getId()
+            );
 
         $totalBaseDiscount = $this->prepareDiscountForTaxAmount($shippingAssignment, $request);
         if ($totalBaseDiscount < 0.001 || !$totalBaseDiscount) {
@@ -127,7 +127,7 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
         return [
             'code'  => $this->getCode(),
             'title' => $this->getLabel(),
-            'value' => $quote->getData('retail_discount_per_item')
+            'value' => $quote->getData('retail_discount_per_item'),
         ];
     }
 
@@ -136,7 +136,7 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
         \Magento\Framework\DataObject $request
     ) {
         $baseTotalDiscount = 0;
-        $items             = $shippingAssignment->getItems();
+        $items = $shippingAssignment->getItems();
         $this->calParentItemsPrice($items);
         foreach ($items as $item) {
             /** @var \Magento\Quote\Model\Quote\Item $item */
@@ -147,9 +147,9 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
             $request->setProductClassId(
                 $item->getProduct()->getTaxClassId()
             );
-            $rate      = $this->getCalculator()->getRate($request);
-            $inclTax   = $this->_config->priceIncludesTax($this->store);
-            
+            $rate = $this->getCalculator()->getRate($request);
+            $inclTax = $this->_config->priceIncludesTax($this->store);
+
             $currencyRate = $this->getPriceCurrency()->convert(1, $this->store);
             $discountPerItem = $this->discountPerItemHelper->getItemDiscount($item, $currencyRate);
             if ($discountPerItem == null || !is_numeric($discountPerItem)) {
@@ -158,13 +158,13 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
 
             if ($item->getHasChildren() && $item->isChildrenCalculated()) {
                 $baseItemDiscount = $item->getQty() * $discountPerItem;
-                $childDiscount    = 0;
+                $childDiscount = 0;
                 foreach ($item->getChildren() as $child) {
                     /** @var \Magento\Quote\Model\Quote\Item $child */
                     $itemBaseDisCalPrice = $this->discountPerItemHelper->getItemBaseDiscountCalculationPrice($child);
-                    $baseItemPrice    = $item->getQty()
-                                        * ($child->getQty() * $itemBaseDisCalPrice)
-                                        - $child->getBaseDiscountAmount();
+                    $baseItemPrice = $item->getQty()
+                        * ($child->getQty() * $itemBaseDisCalPrice)
+                        - $child->getBaseDiscountAmount();
                     $itemBaseDiscount = min(
                         $baseItemPrice,
                         $this->deltaRound(
@@ -179,25 +179,33 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
                     $itemDiscount = $this->convertPrice($itemBaseDiscount);
 
                     $child->setData('retail_discount_per_items_base_discount', $itemBaseDiscount)
-                          ->setData('retail_discount_per_items_discount', $itemDiscount);
+                        ->setData('retail_discount_per_items_discount', $itemDiscount);
 
                     $childDiscount += $itemDiscount;
 
                     switch ($this->_config->getAlgorithm($this->store)) {
                         case Calculation::CALC_UNIT_BASE:
-                            $baseTaxableAmount = max(0, $child->getBaseTaxableAmount()
-                                                        - $this->round($itemBaseDiscount / $child->getQty()));
-                            $taxableAmount     = max(0, $child->getTaxableAmount()
-                                                        - $this->round($itemDiscount / $child->getQty()));
+                            $baseTaxableAmount = max(
+                                0, $child->getBaseTaxableAmount()
+                                - $this->round($itemBaseDiscount / $child->getQty())
+                            );
+                            $taxableAmount = max(
+                                0, $child->getTaxableAmount()
+                                - $this->round($itemDiscount / $child->getQty())
+                            );
                             $child->setData('base_taxable_amount', $baseTaxableAmount);
                             $child->setData('taxable_amount', $taxableAmount);
                             break;
                         case Calculation::CALC_ROW_BASE:
                         case Calculation::CALC_TOTAL_BASE:
-                            $baseTaxableAmount = max(0, $child->getBaseTaxableAmount()
-                                                        - $this->round($itemBaseDiscount));
-                            $taxableAmount     = max(0, $child->getTaxableAmount()
-                                                        - $this->round($itemDiscount));
+                            $baseTaxableAmount = max(
+                                0, $child->getBaseTaxableAmount()
+                                - $this->round($itemBaseDiscount)
+                            );
+                            $taxableAmount = max(
+                                0, $child->getTaxableAmount()
+                                - $this->round($itemDiscount)
+                            );
                             $child->setData('base_taxable_amount', $baseTaxableAmount);
                             $child->setData('taxable_amount', $taxableAmount);
                             break;
@@ -236,18 +244,17 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
                      * Set lại giá tính discount
                      */
                     $promotionPriceCalDiscount = $itemBaseDisCalPrice
-                                                 - $this->round($itemBaseDiscount / $child->getQty());
+                        - $this->round($itemBaseDiscount / $child->getQty());
                     $child->setData('discount_calculation_price', $this->convertPrice($promotionPriceCalDiscount));
                     $child->setData('base_discount_calculation_price', $promotionPriceCalDiscount);
 
                     $baseTotalDiscount += $itemBaseDiscount;
                 }
                 $item->setData('retail_discount_per_items_discount', $childDiscount);
-            }
-            else {
-                $baseItemPrice    = $item->getQty()
-                                    * $this->discountPerItemHelper->getItemBaseDiscountCalculationPrice($item)
-                                    - $item->getBaseDiscountAmount();
+            } else {
+                $baseItemPrice = $item->getQty()
+                    * $this->discountPerItemHelper->getItemBaseDiscountCalculationPrice($item)
+                    - $item->getBaseDiscountAmount();
                 $itemBaseDiscount = min($item->getQty() * $discountPerItem, $baseItemPrice);
 
                 if ($baseItemPrice <= 0.001 || $itemBaseDiscount <= 0.001) {
@@ -256,28 +263,32 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
 
                 $itemDiscount = $this->convertPrice($itemBaseDiscount);
                 $item->setData('retail_discount_per_items_base_discount', $itemBaseDiscount)
-                     ->setData('retail_discount_per_items_discount', $itemDiscount);
+                    ->setData('retail_discount_per_items_discount', $itemDiscount);
 
                 switch ($this->_config->getAlgorithm($this->store)) {
                     case Calculation::CALC_UNIT_BASE:
-                        $baseTaxableAmount = max(0, $item->getBaseTaxableAmount()
-                                                    - $this->round($itemBaseDiscount / $item->getQty()));
-                        $taxableAmount     = max(0, $item->getTaxableAmount()
-                                                    - $this->round($itemDiscount / $item->getQty()));
+                        $baseTaxableAmount = max(
+                            0, $item->getBaseTaxableAmount()
+                            - $this->round($itemBaseDiscount / $item->getQty())
+                        );
+                        $taxableAmount = max(
+                            0, $item->getTaxableAmount()
+                            - $this->round($itemDiscount / $item->getQty())
+                        );
                         $item->setData('base_taxable_amount', $baseTaxableAmount);
                         $item->setData('taxable_amount', $taxableAmount);
                         break;
                     case Calculation::CALC_ROW_BASE:
                     case Calculation::CALC_TOTAL_BASE:
                         $baseTaxableAmount = max(0, $item->getBaseTaxableAmount() - $this->round($itemBaseDiscount));
-                        $taxableAmount     = max(0, $item->getTaxableAmount() - $this->round($itemDiscount));
+                        $taxableAmount = max(0, $item->getTaxableAmount() - $this->round($itemDiscount));
                         $item->setData('base_taxable_amount', $baseTaxableAmount);
                         $item->setData('taxable_amount', $taxableAmount);
                         break;
                 }
 
                 /*
-                 * Trong trường hợp catalog_tax = incl tax 
+                 * Trong trường hợp catalog_tax = incl tax
                  * thì giá discount bị trừ vào grand total là discount đã bao gồm thuế. Như cần phải tính lại
                  * giá thực tế trừ vào grand total. -> Lam o model: Mage_Tax_Model_Sales_Total_Quote_Tax
                  */
@@ -302,12 +313,12 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
                 }
                 /*
                  * IMPORTANCE
-                 * Vì yêu cầu là tính discount/rule/promotin của magento sau discount per item 
+                 * Vì yêu cầu là tính discount/rule/promotin của magento sau discount per item
                  * nên sẽ sửa lại giá tính discount của promotion.
                  * Set lại giá tính discount
                  * */
                 $promotionPriceCalDiscount = $this->discountPerItemHelper->getItemBaseDiscountCalculationPrice($item) -
-                                             $this->round($itemBaseDiscount / $item->getQty());
+                    $this->round($itemBaseDiscount / $item->getQty());
                 $item->setData('discount_calculation_price', $this->convertPrice($promotionPriceCalDiscount));
                 $item->setData('base_discount_calculation_price', $promotionPriceCalDiscount);
 
@@ -332,7 +343,7 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
         if ($price) {
             $rate = (string)$parentId;
             // initialize the delta to a small number to avoid non-deterministic behavior with rounding of 0.5
-            $delta = isset($this->roundingDeltas[$type][$rate]) ? $this->roundingDeltas[$type][$rate] : 0.000001;
+            $delta = $this->roundingDeltas[$type][$rate] ?? 0.000001;
             $price += $delta;
             $this->roundingDeltas[$type][$rate] = $price - $this->round($price);
             $price = $this->round($price);
@@ -389,7 +400,7 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
     /**
      * Round amount
      *
-     * @param   float $price
+     * @param float $price
      *
      * @return  float
      */
