@@ -26,14 +26,21 @@ class AddDiscountPerItemWhenCalculateTax
     protected $taxConfig;
 
     /**
+     * @var \Magento\Framework\Pricing\PriceCurrencyInterface
+     */
+    protected $priceCurrency;
+
+    /**
      * AddDiscountPerItemWhenCalculateTax constructor.
      *
      * @param \Magento\Tax\Model\Config $taxConfig
      */
     public function __construct(
-        Config $taxConfig
+        Config $taxConfig,
+        \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency
     ) {
         $this->taxConfig = $taxConfig;
+        $this->priceCurrency = $priceCurrency;
     }
 
     public function aroundMapItem(
@@ -46,13 +53,13 @@ class AddDiscountPerItemWhenCalculateTax
         $parentCode = null
     ) {
         if ($item->getData('retail_discount_per_items_base_discount') && $useBaseCurrency) {
-            $item->setBaseDiscountAmount($item->getBaseDiscountAmount()
-                                         + $item->getData('retail_discount_per_items_base_discount'));
+            $baseDiscountAmount = $item->getBaseDiscountAmount() + $item->getData('retail_discount_per_items_base_discount');
+            $item->setBaseDiscountAmount($this->priceCurrency->round($baseDiscountAmount));
         }
 
         if ($item->getData('retail_discount_per_items_discount') && !$useBaseCurrency) {
-            $item->setDiscountAmount($item->getDiscountAmount()
-                                     + $item->getData('retail_discount_per_items_discount'));
+            $discountAmount = $item->getDiscountAmount() + $item->getData('retail_discount_per_items_discount');
+            $item->setDiscountAmount($this->priceCurrency->round($discountAmount));
         }
 
         if ($item->getBuyRequest()->getData('retail_discount_per_items_percent')) {
