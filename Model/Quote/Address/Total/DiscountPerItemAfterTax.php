@@ -207,7 +207,7 @@ class DiscountPerItemAfterTax extends CommonTaxCollector
             }
         }
 
-        return $baseTotalDiscount;
+        return $this->round($baseTotalDiscount);
     }
 
     /**

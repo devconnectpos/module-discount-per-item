@@ -326,7 +326,8 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
             }
         }
 
-        return $baseTotalDiscount;
+        // Need to do one more rounding to resolve Mr's Leather issue
+        return $this->round($baseTotalDiscount);
     }
 
     /**
