@@ -322,12 +322,12 @@ class DiscountPerItemBeforeTax extends CommonTaxCollector
                 $item->setData('discount_calculation_price', $this->convertPrice($promotionPriceCalDiscount));
                 $item->setData('base_discount_calculation_price', $promotionPriceCalDiscount);
 
-                $baseTotalDiscount += $itemBaseDiscount;
+                $baseTotalDiscount += $this->round($itemBaseDiscount);
             }
         }
 
         // Need to do one more rounding to resolve Mr's Leather issue
-        return $this->round($baseTotalDiscount);
+        return $baseTotalDiscount;
     }
 
     /**

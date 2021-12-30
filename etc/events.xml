@@ -13,5 +13,4 @@
     <event name="sales_order_item_save_before">
         <observer name="connectpos_save_discount_per_item_to_order_item" instance="\SM\DiscountPerItem\Observer\SaveDiscountPerItemToOrderItem"/>
     </event>
-
 </config>
