@@ -12,7 +12,6 @@ use Magento\Framework\Event\ObserverInterface;
 
 class SaveDiscountPerItemToOrderAndQuote implements ObserverInterface
 {
-
     /**
      * @param Observer $observer
      *

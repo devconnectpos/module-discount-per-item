@@ -7,7 +7,6 @@ use Magento\Framework\Event\ObserverInterface;
 
 class SaveDiscountPerItemToOrderItem implements ObserverInterface
 {
-    
     public function execute(Observer $observer)
     {
         /** @var \Magento\Sales\Model\Order\Item $item */
@@ -19,7 +18,7 @@ class SaveDiscountPerItemToOrderItem implements ObserverInterface
                 $productOptions['info_buyRequest']['retail_discount_per_items_percent']
             );
         }
-    
+
         if (isset($productOptions['info_buyRequest']['discount_per_item'])) {
             $item->setData('cpos_discount_per_item', $productOptions['info_buyRequest']['discount_per_item']);
         }
